@@ -12,6 +12,7 @@ const initialState = {
 };
 
 const authReducer = (state, action) => {
+  console.log('AuthReducer: Action:', action.type, 'Payload:', action.payload);
   switch (action.type) {
     case 'AUTH_START':
       return {
@@ -20,9 +21,10 @@ const authReducer = (state, action) => {
         error: null
       };
     case 'AUTH_SUCCESS':
+      console.log('AuthReducer: AUTH_SUCCESS - Setting user to:', action.payload);
       return {
         ...state,
-        user: action.payload.user,
+        user: action.payload,
         token: action.payload.token,
         loading: false,
         error: null
@@ -60,6 +62,11 @@ const authReducer = (state, action) => {
 
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+  
+  // Debug: Log state changes
+  useEffect(() => {
+    console.log('AuthContext: State updated:', state);
+  }, [state]);
 
   // Check if user is authenticated on app load
   useEffect(() => {
@@ -90,16 +97,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      console.log('AuthContext: Starting login...');
       dispatch({ type: 'AUTH_START' });
       const response = await authService.login(email, password);
+      console.log('AuthContext: Login API response:', response);
       localStorage.setItem('token', response.token);
       dispatch({
         type: 'AUTH_SUCCESS',
         payload: response
       });
+      console.log('AuthContext: User state updated, user should now be:', response);
       toast.success('Login successful!');
       return response;
     } catch (error) {
+      console.error('AuthContext: Login error:', error);
       dispatch({
         type: 'AUTH_FAILURE',
         payload: error.message

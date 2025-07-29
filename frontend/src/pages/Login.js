@@ -10,6 +10,8 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+
+
   const {
     register,
     handleSubmit,
@@ -19,8 +21,13 @@ const Login = () => {
   const onSubmit = async (data) => {
     setIsLoading(true);
     try {
-      await login(data.email, data.password);
-      navigate('/');
+      console.log('Attempting login...');
+      const result = await login(data.email, data.password);
+      console.log('Login successful, result:', result);
+      // Add a small delay to ensure state is updated before navigation
+      setTimeout(() => {
+        navigate('/');
+      }, 100);
     } catch (error) {
       console.error('Login error:', error);
     } finally {

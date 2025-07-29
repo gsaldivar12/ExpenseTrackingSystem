@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSidebar } from '../context/SidebarContext';
 import { 
   Bell, 
   Settings, 
@@ -13,8 +14,8 @@ import {
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { toggleSidebar } = useSidebar();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -93,52 +94,16 @@ const Navbar = () => {
           {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
             <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={toggleSidebar}
               className="p-2 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-md"
             >
-              {isMobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              <Menu className="h-6 w-6" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
-            <div className="px-3 py-2 text-sm text-gray-500">
-              Welcome, {user?.name}
-            </div>
-            <Link
-              to="/profile"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <User className="h-4 w-4 mr-2" />
-              Profile
-            </Link>
-            <Link
-              to="/settings"
-              className="flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
-              onClick={() => setIsMobileMenuOpen(false)}
-            >
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
-            </Link>
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
+
     </nav>
   );
 };
