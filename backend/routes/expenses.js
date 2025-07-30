@@ -49,19 +49,30 @@ router.post('/', [
       return res.status(400).json({ message: 'Category not found' });
     }
 
-    const expense = await Expense.create({
+    // Clean up empty values
+    const cleanData = {
       user: req.user._id,
       title,
       amount,
       category,
-      description,
       date: date || new Date(),
       paymentMethod: paymentMethod || 'Cash',
-      location,
-      tags: tags || [],
       isRecurring: isRecurring || false,
       recurringType: recurringType || 'Monthly'
-    });
+    };
+
+    // Only add optional fields if they have values
+    if (description && description.trim()) {
+      cleanData.description = description.trim();
+    }
+    if (location && location.trim()) {
+      cleanData.location = location.trim();
+    }
+    if (tags && Array.isArray(tags) && tags.length > 0) {
+      cleanData.tags = tags.filter(tag => tag && tag.trim());
+    }
+
+    const expense = await Expense.create(cleanData);
 
     const populatedExpense = await Expense.findById(expense._id).populate('category', 'name icon color');
 
@@ -206,9 +217,37 @@ router.put('/:id', [
       }
     }
 
+    // Clean up empty values for update
+    const updateData = { ...req.body };
+    
+    // Handle empty strings for optional fields
+    if (updateData.description !== undefined) {
+      if (!updateData.description || !updateData.description.trim()) {
+        updateData.description = undefined; // Remove the field
+      } else {
+        updateData.description = updateData.description.trim();
+      }
+    }
+    
+    if (updateData.location !== undefined) {
+      if (!updateData.location || !updateData.location.trim()) {
+        updateData.location = undefined; // Remove the field
+      } else {
+        updateData.location = updateData.location.trim();
+      }
+    }
+    
+    if (updateData.tags !== undefined) {
+      if (!updateData.tags || !Array.isArray(updateData.tags) || updateData.tags.length === 0) {
+        updateData.tags = undefined; // Remove the field
+      } else {
+        updateData.tags = updateData.tags.filter(tag => tag && tag.trim());
+      }
+    }
+
     const updatedExpense = await Expense.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       { new: true, runValidators: true }
     ).populate('category', 'name icon color');
 
