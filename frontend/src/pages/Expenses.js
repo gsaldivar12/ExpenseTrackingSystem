@@ -132,14 +132,17 @@ const Expenses = () => {
     try {
       // Process tags from comma-separated string to array
       const processedData = { ...data };
+      console.log(processedData);
       if (data.tags) {
-        processedData.tags = data.tags
+        processedData.tags = String(data.tags)
           .split(',')
           .map(tag => tag.trim())
           .filter(tag => tag.length > 0);
       }
 
+
       if (editingExpense) {
+        console.log(processedData);
         await expenseService.updateExpense(editingExpense._id, processedData);
         toast.success('Expense updated successfully!');
       } else {
@@ -153,6 +156,7 @@ const Expenses = () => {
       fetchExpenses(pagination.currentPage);
     } catch (error) {
       toast.error(error.message);
+      
     }
   };
 
@@ -180,7 +184,7 @@ const Expenses = () => {
       date: format(new Date(expense.date), 'yyyy-MM-dd'),
       paymentMethod: expense.paymentMethod,
       location: expense.location || '',
-      tags: expense.tags?.join(', ') || '',
+      tags: expense.tags?.join(', ') || [],
       isRecurring: expense.isRecurring,
       recurringType: expense.recurringType
     });
@@ -189,21 +193,36 @@ const Expenses = () => {
 
   // Open add modal
   const openAddModal = () => {
-    setEditingExpense(null);
+    // Get current time in America/Toronto (EST/EDT)
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Toronto',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  
+    // Format as YYYY-MM-DD
+    const [{ value: year }, , { value: month }, , { value: day }] = formatter.formatToParts(now);
+    const estDate = `${year}-${month}-${day}`;
+  
     reset({
       title: '',
       amount: '',
       category: '',
       description: '',
-      date: format(new Date(), 'yyyy-MM-dd'),
+      date: estDate,
       paymentMethod: 'Cash',
       location: '',
-      tags: '',
+      tags: [],
       isRecurring: false,
       recurringType: 'Monthly'
     });
+  
+    setEditingExpense(null);
     setShowModal(true);
   };
+  
 
   const closeModal = () => {
     setShowModal(false);
